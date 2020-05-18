@@ -6,7 +6,7 @@ int GetRandom(int min, int max);
 int binary_search(int array[], double ok, double ng, int k);
 
 int main(void) {
-  int n = 1000000.0;
+  int n = 1000000;
   int array[n];
 
   array[0] = 3;
