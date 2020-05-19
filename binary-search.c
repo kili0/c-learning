@@ -15,7 +15,7 @@ int main(void) {
     array[i+1] = array[i] + GetRandom(1, 10);
   }
 
-  //------test------
+  //------test------//
   /*for(int i=0; i<n; i++) {
     int key = array[i];
     int result = (binary_search(array, 0.0, n, key)) + 1;
@@ -26,7 +26,7 @@ int main(void) {
       printf("%dは配列に存在しません\n", key);
     }
   }*/
-  //----------------
+  //----------------//
 
   int key = array[GetRandom(0, n)];
   int result = (binary_search(array, 0, n, key)) + 1;
