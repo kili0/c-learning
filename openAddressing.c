@@ -14,7 +14,7 @@ int GetRandom(int min, int max);
 void OpenAddressing(int data[], int m, int d);
 
 int main(void) {
-  /*int array[Num];
+  int array[Num];
   srand((unsigned int)time(NULL));
   for(int i=0; i<Num; i++) {
     array[i] = GetRandom(1, 100);
@@ -23,9 +23,9 @@ int main(void) {
         array[i] += GetRandom(-5, 5);
       }
     }
-  }*/
-
-  int array[Num] = {3, 18, 98, 24, 15, 11, 10, 8, 6, 5, 21};
+  }
+  //test data
+  //int array[Num] = {3, 18, 98, 24, 15, 11, 10, 8, 6, 5, 21};
 
   //ハッシュテーブル初期化
   for(int i=0; i<BacketSize; i++) {
