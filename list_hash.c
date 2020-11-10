@@ -93,30 +93,7 @@ void registerKey(node_t** pHashTable, int key, struct list *list){
 	return;
 }
 
-int main() {
-  node_t* pHashTable[SIZE_TABLE];
-  initHashTable(pHashTable);
-
-  struct list *p;
-  struct list head;
-
-  p = &head;
-  int num = 0;
-
-  for(int i=0; i<MAXLINE; i++){
-    p -> next = malloc(sizeof(struct list));
-    p = p->next;
-    //num = num + rand() % 10;
-    num = rand() % 100;
-    p -> key = num;
-    registerKey(pHashTable, p->key, p);
-  }
-  printfHashTable(pHashTable);
-
-  /* search */
-  printf("検索する数字を入力してください：");
-  int s_num;
-  scanf("%d", &s_num);
+void search(node_t** pHashTable, int s_num) {
   if(pHashTable[hashFunc(s_num)] == NULL) {
     printf("Not found.\n");
   } else {
@@ -133,5 +110,36 @@ int main() {
       printf("%d -> hashVal:%d, list:%p\n", s_num, hashFunc(s_num), pNode->list);
     }
   }
-  exit(0);
+  return;
+}
+
+int main() {
+  node_t* pHashTable[SIZE_TABLE];
+  initHashTable(pHashTable);
+
+  struct list *p;
+  struct list head;
+
+  p = &head;
+  int num = 0;
+
+  for(int i=0; i<MAXLINE; i++){
+    p -> next = malloc(sizeof(struct list));
+    p = p->next;
+    num = rand() % 100;
+    p -> key = num;
+    registerKey(pHashTable, p->key, p);
+  }
+  printfHashTable(pHashTable);
+
+  char command[16] = "";
+  int s_num;
+	while (strncmp(command, "exit", 4) != 0) {
+		scanf("%s %d", command, &s_num);
+
+		if(strncmp(command, "search", 6) == 0) {
+			search(pHashTable, s_num);
+		}
+	}
+  return 0;
 }
