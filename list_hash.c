@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <sys/time.h>
-
 #define MAXLINE 1000000
 #define SIZE_TABLE 10
 
