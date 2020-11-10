@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #define MAXLINE 1000000
-#define SIZE_TABLE 10
+#define SIZE_TABLE 50
 
 struct list {
   struct list *next;
@@ -128,7 +128,7 @@ int main() {
     p -> key = num;
     registerKey(pHashTable, p->key, p);
   }
-  printfHashTable(pHashTable);
+  //printfHashTable(pHashTable);
 
   char command[16] = "";
   int s_num;
