@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define MAXLINE 1000000
 #define SIZE_TABLE 50
@@ -108,6 +109,12 @@ void search(node_t** pHashTable, int s_num) {
       printf("%d -> hashVal:%d, list:%p\n", s_num, hashFunc(s_num), pNode->list);
     }
   }
+
+  /* time */
+  long cpu_time = clock();
+  double sec = (double)cpu_time / CLOCKS_PER_SEC;
+  printf("time: %f\n\n", sec);
+
   return;
 }
 
