@@ -153,7 +153,6 @@ insert(int key, DATA *data)
 
 		int key_ = splited_leaf->key[0];
 		Root = alloc_root(leaf, key_, splited_leaf);
-		print_tree_core(Root);
 
 	}
 }
