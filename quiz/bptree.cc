@@ -112,23 +112,6 @@ insert_in_leaf(NODE *leaf, int key, DATA *data)
 	return leaf;
 }
 
-NODE *
-insert_in_internal(NODE *parent, NODE *left, int rs_key, NODE *right)
-{
-	int i;
-	if (rs_key < left->key[0]) ERR;
-	else {
-		for(i = parent->nkey; parent->key[i-1] > rs_key; i--) {
-			parent->chi[i+1] = parent->chi[i];
-			parent->key[i] = parent->key[i-1];
-		}
-		parent->key[i] = rs_key;
-		parent->chi[i+1] = right;
-	}
-	parent->nkey++;
-	return parent;
-}
-
 TEMP *
 insert_in_temp(TEMP *temp, int key, DATA *data)
 {
@@ -152,6 +135,24 @@ insert_in_temp(TEMP *temp, int key, DATA *data)
 	temp->nkey = temp->nkey + 1;
 
 	return temp;
+}
+
+NODE *
+insert_in_internal(NODE *parent, NODE *left, int rs_key, NODE *right)
+{
+	int i;
+	if (rs_key < left->key[0]) ERR;
+	else {
+		for(i = parent->nkey; parent->key[i-1] > rs_key; i--) {
+			parent->chi[i+1] = parent->chi[i];
+			parent->key[i] = parent->key[i-1];
+		}
+		parent->key[i] = rs_key;
+		parent->chi[i+1] = right;
+		parent->chi[i] = left;
+	}
+	parent->nkey = parent->nkey + 1;
+	return parent;
 }
 
 NODE *
@@ -184,12 +185,15 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 			keydata->chi[i] = node->chi[i];
 			keydata->nkey++;
 		}
+		keydata->chi[i] = node->chi[i];
+
 		keydata = insert_in_temp(keydata, key, data);
 
 		for(i=0; i<node->nkey; i++) {
 			node->key[i] = 0;
 			node->chi[i] = NULL;
 		}
+		node->chi[i] = NULL;
 		node->nkey = 0;
 
 		NODE *_node;
@@ -204,8 +208,12 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 			_node->key[i] = keydata->key[i+(N/2)];
 			_node->nkey++;
 		}
+		node->chi[i] = keydata->chi[i];
+		_node->chi[i] = keydata->chi[i+(N/2)];
+
 		int _key;
 		_key = _node->key[0];
+
 		insert_in_parent(node, _key, _node, data);
 	}
 	return node;
@@ -260,12 +268,10 @@ insert(int key, DATA *data)
 			splited_leaf->nkey = splited_leaf->nkey + 1;
 		}
 
-		//printf("keydata: [%d, %d, %d, %d]\n", keydata->key[0], keydata->key[1], keydata->key[2], keydata->key[3]);
-
 		int _key;
 		_key = splited_leaf->key[0];
 		insert_in_parent(leaf, _key, splited_leaf, data);
-
+		NNN;
 	}
 }
 
@@ -304,7 +310,9 @@ main(int argc, char *argv[])
 
   while (true) {
 		insert(interactive(), NULL);
+		NNN;
     print_tree(Root);
+		NNN;
   }
 
 	return 0;
