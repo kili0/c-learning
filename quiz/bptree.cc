@@ -34,6 +34,16 @@ alloc_leaf(NODE *parent)
 	return node;
 }
 
+TEMP *
+alloc_temp()
+{
+	TEMP *temp;
+	if (!(temp = (TEMP *)calloc(1, sizeof(TEMP)))) ERR;
+	temp->nkey = 0;
+
+	return temp;
+}
+
 NODE *
 alloc_internal(NODE *parent)
 {
@@ -87,8 +97,8 @@ insert_in_leaf(NODE *leaf, int key, DATA *data)
 		leaf->key[0] = key;
 		leaf->chi[0] = (NODE *)data;
 	}
-	else { // Quiz
-    // Step 2. Insert the new key
+	else {
+    // Insert the new key
 		for (i = leaf->nkey; leaf->key[i-1] > key; i--) {
 			leaf->chi[i] = leaf->chi[i-1];
 			leaf->key[i] = leaf->key[i-1];
@@ -96,10 +106,92 @@ insert_in_leaf(NODE *leaf, int key, DATA *data)
 		leaf->key[i] = key;
 		leaf->chi[i] = (NODE *)data;
 	}
-  // Step 1. Increment the number of keys
+  // Increment the number of keys
 	leaf->nkey = leaf->nkey + 1;
 
 	return leaf;
+}
+
+TEMP *
+insert_in_temp(TEMP *temp, int key, DATA *data)
+{
+	int i;
+	if (key < temp->key[0]) {
+		for (i = temp->nkey; i>0; i--) {
+			temp->chi[i] = temp->chi[i-1];
+			temp->key[i] = temp->key[i-1];
+		}
+		temp->key[0] = key;
+		temp->chi[0] = (NODE *)data;
+	}
+	else {
+		for (i = temp->nkey; temp->key[i-1] > key; i--) {
+			temp->chi[i] = temp->chi[i-1];
+			temp->key[i] = temp->key[i-1];
+		}
+		temp->key[i] = key;
+		temp->chi[i] = (NODE *)data;
+	}
+	temp->nkey = temp->nkey + 1;
+
+	return temp;
+}
+
+NODE *
+insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
+{
+	if(left->parent == NULL) {
+		NODE *root;
+		root = alloc_root(left, key, right);
+
+		left->parent = root;
+		right->parent = root;
+
+		Root = root;
+		return root;
+	}
+
+	NODE *node;
+	node = left->parent;
+
+	if(node->nkey < (N-1)) {
+		insert_in_leaf(node, key, data);
+	}
+	else {
+		TEMP *keydata;
+		keydata = alloc_temp();
+
+		int i;
+		for(i=0; i<(N-1); i++) {
+			keydata->key[i] = node->key[i];
+			keydata->chi[i] = node->chi[i];
+			keydata->nkey++;
+		}
+		keydata = insert_in_temp(keydata, key, data);
+
+		for(i=0; i<node->nkey; i++) {
+			node->key[i] = 0;
+			node->chi[i] = NULL;
+		}
+		node->nkey = 0;
+
+		NODE *_node;
+		_node = alloc_leaf(node->parent);
+
+		for(i=0; i<N/2; i++) {
+			node->chi[i] = keydata->chi[i];
+			node->key[i] = keydata->key[i];
+			node->nkey++;
+
+			_node->chi[i] = keydata->chi[i+(N/2)];
+			_node->key[i] = keydata->key[i+(N/2)];
+			_node->nkey++;
+		}
+		int _key;
+		_key = _node->key[0];
+		insert_in_parent(node, _key, _node, data);
+	}
+	return node;
 }
 
 void
@@ -119,19 +211,19 @@ insert(int key, DATA *data)
 		insert_in_leaf(leaf, key, data);
 	}
 	else {
-    // Split (quiz at 10/09)
-
 		NODE *splited_leaf;
-		splited_leaf = alloc_leaf(leaf);
+		splited_leaf = alloc_leaf(leaf->parent);
 
 		TEMP *keydata;
+		keydata = alloc_temp();
 
-		for(int i=0; i<N; i++) {
+		for(int i=0; i<N-1; i++) {
 			keydata->key[i] = leaf->key[i];
 			keydata->chi[i] = leaf->chi[i];
+			keydata->nkey++;
 		}
-		insert_in_leaf(keydata, key, data);
-		//printf("keydata: [%d, %d, %d, %d]", keydata->key[0], keydata->key[1], keydata->key[2], keydata->key[3]);
+
+		keydata = insert_in_temp(keydata, key, data);
 
 		splited_leaf->chi[N-1] = leaf->chi[N-1];
 		leaf->chi[N-1] = splited_leaf;
@@ -151,8 +243,11 @@ insert(int key, DATA *data)
 			splited_leaf->nkey = splited_leaf->nkey + 1;
 		}
 
-		int key_ = splited_leaf->key[0];
-		Root = alloc_root(leaf, key_, splited_leaf);
+		//printf("keydata: [%d, %d, %d, %d]\n", keydata->key[0], keydata->key[1], keydata->key[2], keydata->key[3]);
+
+		int _key;
+		_key = splited_leaf->key[0];
+		insert_in_parent(leaf, _key, splited_leaf, data);
 
 	}
 }
