@@ -274,7 +274,6 @@ insert(int key, DATA *data)
 			splited_leaf->key[i] = keydata->key[i+(N/2)];
 			splited_leaf->nkey = splited_leaf->nkey + 1;
 		}
-		leaf->chi[N] = splited_leaf;
 
 		int _key;
 		_key = splited_leaf->key[0];
