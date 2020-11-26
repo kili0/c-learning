@@ -69,6 +69,9 @@ alloc_root(NODE *left, int rs_key, NODE *right)
 	node->chi[1] = right;
 	node->nkey = 1;
 
+	left->parent = node;
+	right->parent = node;
+
 	return node;
 }
 
@@ -162,9 +165,6 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 		NODE *root;
 		root = alloc_root(left, key, right);
 
-		left->parent = root;
-		right->parent = root;
-
 		Root = root;
 		return root;
 	}
@@ -189,6 +189,10 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 
 		keydata = insert_in_temp(keydata, key, data);
 
+		printf("keydata(parent): ");
+		for(int i=0; i<keydata->nkey; i++) printf("%d ", keydata->key[i]);
+		printf("\n");
+
 		for(i=0; i<node->nkey; i++) {
 			node->key[i] = 0;
 			node->chi[i] = NULL;
@@ -211,8 +215,7 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 		node->chi[i] = keydata->chi[i];
 		_node->chi[i] = keydata->chi[i+(N/2)];
 
-		int _key;
-		_key = _node->key[0];
+		int _key = _node->key[0];
 
 		insert_in_parent(node, _key, _node, data);
 	}
@@ -249,6 +252,10 @@ insert(int key, DATA *data)
 		}
 
 		keydata = insert_in_temp(keydata, key, data);
+		
+		printf("keydata(leaf): ");
+		for(int i=0; i<keydata->nkey; i++) printf("%d ", keydata->key[i]);
+		printf("\n");
 
 		splited_leaf->chi[N-1] = leaf->chi[N-1];
 		leaf->chi[N-1] = splited_leaf;
@@ -267,11 +274,11 @@ insert(int key, DATA *data)
 			splited_leaf->key[i] = keydata->key[i+(N/2)];
 			splited_leaf->nkey = splited_leaf->nkey + 1;
 		}
+		leaf->chi[N] = splited_leaf;
 
 		int _key;
 		_key = splited_leaf->key[0];
 		insert_in_parent(leaf, _key, splited_leaf, data);
-		NNN;
 	}
 }
 
@@ -310,9 +317,7 @@ main(int argc, char *argv[])
 
   while (true) {
 		insert(interactive(), NULL);
-		NNN;
     print_tree(Root);
-		NNN;
   }
 
 	return 0;
