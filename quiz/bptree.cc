@@ -107,9 +107,26 @@ insert_in_leaf(NODE *leaf, int key, DATA *data)
 		leaf->chi[i] = (NODE *)data;
 	}
   // Increment the number of keys
-	leaf->nkey = leaf->nkey + 1;
+	leaf->nkey++;
 
 	return leaf;
+}
+
+NODE *
+insert_in_internal(NODE *parent, NODE *left, int rs_key, NODE *right)
+{
+	int i;
+	if (rs_key < left->key[0]) ERR;
+	else {
+		for(i = parent->nkey; parent->key[i-1] > rs_key; i--) {
+			parent->chi[i+1] = parent->chi[i];
+			parent->key[i] = parent->key[i-1];
+		}
+		parent->key[i] = rs_key;
+		parent->chi[i+1] = right;
+	}
+	parent->nkey++;
+	return parent;
 }
 
 TEMP *
@@ -155,7 +172,7 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 	node = left->parent;
 
 	if(node->nkey < (N-1)) {
-		insert_in_leaf(node, key, data);
+		insert_in_internal(node, left, key, right);
 	}
 	else {
 		TEMP *keydata;
