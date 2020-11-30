@@ -252,7 +252,7 @@ insert(int key, DATA *data)
 		}
 
 		keydata = insert_in_temp(keydata, key, data);
-		
+
 		printf("keydata(leaf): ");
 		for(int i=0; i<keydata->nkey; i++) printf("%d ", keydata->key[i]);
 		printf("\n");
