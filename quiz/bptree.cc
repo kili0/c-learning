@@ -82,6 +82,18 @@ alloc_root(NODE *left, int rs_key, NODE *right)
 }
 
 NODE *
+alloc_parent(NODE *parent)
+{
+	NODE *node;
+	if (!(node = (NODE *)calloc(1, sizeof(NODE)))) ERR;
+	node->isLeaf = false;
+	node->parent = parent;
+	node->nkey = 0;
+
+	return node;
+}
+
+NODE *
 find_leaf(NODE *node, int key)
 {
 	int kid;
@@ -121,7 +133,7 @@ insert_in_temp(TEMP *temp, int key, DATA *data)
 }
 
 TEMP *
-insert_in_temp_internal(TEMP *temp, int key, NODE *left)
+insert_in_temp_internal(TEMP *temp, NODE *left, int key, NODE *right)
 {
 	int i;
 	if (key < temp->key[0]) {
@@ -130,8 +142,7 @@ insert_in_temp_internal(TEMP *temp, int key, NODE *left)
 			temp->chi[i+1] = temp->chi[i];
 			temp->key[i] = temp->key[i-1];
 		}
-		PPP(left);
-		temp->chi[1] = temp->chi[0];
+		temp->chi[1] = right;
 		temp->chi[0] = left;
 		temp->key[0] = key;
 	}
@@ -141,7 +152,7 @@ insert_in_temp_internal(TEMP *temp, int key, NODE *left)
 			temp->chi[i+1] = temp->chi[i];
 			temp->key[i] = temp->key[i-1];
 		}
-		temp->chi[i+1] = left;
+		temp->chi[i+1] = right;
 		temp->key[i] = key;
 	}
 	temp->nkey = temp->nkey + 1;
@@ -229,7 +240,7 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 
 		PPP(keydata->chi[0]);  PPP(keydata->chi[1]);
 
-		keydata = insert_in_temp_internal(keydata, key, left);
+		keydata = insert_in_temp_internal(keydata, left, key, right);
 
 		PPP(keydata->chi[0]);  PPP(keydata->chi[1]);
 		printf("keydata(parent): ");
@@ -244,7 +255,7 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 		node->nkey = 0;
 
 		NODE *_node;
-		_node = alloc_leaf(node->parent);
+		_node = alloc_parent(node->parent);
 
 		PPP(keydata->chi[0]);
 
@@ -325,6 +336,7 @@ insert(int key, DATA *data)
 
 		int _key;
 		_key = splited_leaf->key[0];
+		PPP(leaf); PPP(splited_leaf);
 		insert_in_parent(leaf, _key, splited_leaf, data);
 	}
 }
