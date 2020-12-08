@@ -6,9 +6,14 @@ void
 print_tree_core(NODE *n)
 {
 	printf("[");
-	for (int i = 0; i < n->nkey; i++) {
-		if (!n->isLeaf) print_tree_core(n->chi[i]);
+	int i;
+	NNN; DDD(n->nkey);
+	for (i = 0; i < n->nkey; i++) {
+		DDD(n->key[0]);
+		if (!n->isLeaf) { PPP(n->chi[i]); print_tree_core(n->chi[i]); }
+
 		printf("%d", n->key[i]);
+		DDD(n->key[i]);
 		if (i != n->nkey-1 && n->isLeaf) putchar(' ');
 	}
 	if (!n->isLeaf) print_tree_core(n->chi[n->nkey]);
@@ -18,6 +23,7 @@ print_tree_core(NODE *n)
 void
 print_tree(NODE *node)
 {
+	PPP(node);
 	print_tree_core(node);
 	printf("\n"); fflush(stdout);
 }
@@ -88,6 +94,61 @@ find_leaf(NODE *node, int key)
 	return find_leaf(node->chi[kid], key);
 }
 
+TEMP *
+insert_in_temp(TEMP *temp, int key, DATA *data)
+{
+	int i;
+	if (key < temp->key[0]) {
+		for (i = temp->nkey; i>0; i--) {
+			temp->chi[i+1] = temp->chi[i];
+			temp->key[i] = temp->key[i-1];
+		}
+		temp->chi[i+1] = temp->chi[i];
+		temp->chi[0] = (NODE *) data;
+		temp->key[0] = key;
+	}
+	else {
+		for (i = temp->nkey; temp->key[i-1] > key; i--) {
+			temp->chi[i] = temp->chi[i-1];
+			temp->key[i] = temp->key[i-1];
+		}
+		temp->chi[i] = (NODE *) data;
+		temp->key[i] = key;
+	}
+	temp->nkey = temp->nkey + 1;
+
+	return temp;
+}
+
+TEMP *
+insert_in_temp_internal(TEMP *temp, int key, NODE *left)
+{
+	int i;
+	if (key < temp->key[0]) {
+		NNN;
+		for (i = temp->nkey; i>0; i--) {
+			temp->chi[i+1] = temp->chi[i];
+			temp->key[i] = temp->key[i-1];
+		}
+		PPP(left);
+		temp->chi[1] = temp->chi[0];
+		temp->chi[0] = left;
+		temp->key[0] = key;
+	}
+	else {
+		NNN;
+		for (i = temp->nkey; temp->key[i-1] > key; i--) {
+			temp->chi[i+1] = temp->chi[i];
+			temp->key[i] = temp->key[i-1];
+		}
+		temp->chi[i+1] = left;
+		temp->key[i] = key;
+	}
+	temp->nkey = temp->nkey + 1;
+
+	return temp;
+}
+
 NODE *
 insert_in_leaf(NODE *leaf, int key, DATA *data)
 {
@@ -115,46 +176,22 @@ insert_in_leaf(NODE *leaf, int key, DATA *data)
 	return leaf;
 }
 
-TEMP *
-insert_in_temp(TEMP *temp, int key, DATA *data)
-{
-	int i;
-	if (key < temp->key[0]) {
-		for (i = temp->nkey; i>0; i--) {
-			temp->chi[i] = temp->chi[i-1];
-			temp->key[i] = temp->key[i-1];
-		}
-		temp->key[0] = key;
-		temp->chi[0] = (NODE *)data;
-	}
-	else {
-		for (i = temp->nkey; temp->key[i-1] > key; i--) {
-			temp->chi[i] = temp->chi[i-1];
-			temp->key[i] = temp->key[i-1];
-		}
-		temp->key[i] = key;
-		temp->chi[i] = (NODE *)data;
-	}
-	temp->nkey = temp->nkey + 1;
-
-	return temp;
-}
-
 NODE *
 insert_in_internal(NODE *parent, NODE *left, int rs_key, NODE *right)
 {
 	int i;
 	if (rs_key < left->key[0]) ERR;
 	else {
-		for(i = parent->nkey; parent->key[i-1] > rs_key; i--) {
+		for(i = parent->nkey; (parent->key[i-1] > rs_key && i > 0); i--) {
 			parent->chi[i+1] = parent->chi[i];
 			parent->key[i] = parent->key[i-1];
 		}
 		parent->key[i] = rs_key;
+		parent->nkey++;
+
 		parent->chi[i+1] = right;
 		parent->chi[i] = left;
 	}
-	parent->nkey = parent->nkey + 1;
 	return parent;
 }
 
@@ -164,6 +201,8 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 	if(left->parent == NULL) {
 		NODE *root;
 		root = alloc_root(left, key, right);
+
+		DDD(root->key[0]);  PPP(root);
 
 		Root = root;
 		return root;
@@ -180,6 +219,7 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 		keydata = alloc_temp();
 
 		int i;
+		PPP(node->chi[0]);
 		for(i=0; i<(N-1); i++) {
 			keydata->key[i] = node->key[i];
 			keydata->chi[i] = node->chi[i];
@@ -187,8 +227,11 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 		}
 		keydata->chi[i] = node->chi[i];
 
-		keydata = insert_in_temp(keydata, key, data);
+		PPP(keydata->chi[0]);  PPP(keydata->chi[1]);
 
+		keydata = insert_in_temp_internal(keydata, key, left);
+
+		PPP(keydata->chi[0]);  PPP(keydata->chi[1]);
 		printf("keydata(parent): ");
 		for(int i=0; i<keydata->nkey; i++) printf("%d ", keydata->key[i]);
 		printf("\n");
@@ -197,11 +240,13 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 			node->key[i] = 0;
 			node->chi[i] = NULL;
 		}
-		node->chi[i] = NULL;
+		node->chi[node->nkey] = NULL;
 		node->nkey = 0;
 
 		NODE *_node;
 		_node = alloc_leaf(node->parent);
+
+		PPP(keydata->chi[0]);
 
 		for(i=0; i<N/2; i++) {
 			node->chi[i] = keydata->chi[i];
@@ -215,8 +260,9 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 		node->chi[i] = keydata->chi[i];
 		_node->chi[i] = keydata->chi[i+(N/2)];
 
-		int _key = _node->key[0];
+		PPP(node->chi[0]);  PPP(_node->chi[0]);
 
+		int _key = _node->key[0];
 		insert_in_parent(node, _key, _node, data);
 	}
 	return node;
@@ -245,11 +291,13 @@ insert(int key, DATA *data)
 		TEMP *keydata;
 		keydata = alloc_temp();
 
-		for(int i=0; i<N-1; i++) {
+		int i;
+		for(i=0; i<N-1; i++) {
 			keydata->key[i] = leaf->key[i];
 			keydata->chi[i] = leaf->chi[i];
 			keydata->nkey++;
 		}
+		keydata->chi[i] = leaf->chi[i];
 
 		keydata = insert_in_temp(keydata, key, data);
 
@@ -268,11 +316,11 @@ insert(int key, DATA *data)
 		for(int i=0; i<N/2; i++) {
 			leaf->chi[i] = keydata->chi[i];
 			leaf->key[i] = keydata->key[i];
-			leaf->nkey = leaf->nkey + 1;
+			leaf->nkey++;
 
 			splited_leaf->chi[i] = keydata->chi[i+(N/2)];
 			splited_leaf->key[i] = keydata->key[i+(N/2)];
-			splited_leaf->nkey = splited_leaf->nkey + 1;
+			splited_leaf->nkey++;
 		}
 
 		int _key;
