@@ -7,15 +7,14 @@ print_tree_core(NODE *n)
 {
 	printf("[");
 	int i;
-	NNN; DDD(n->nkey);
+
 	for (i = 0; i < n->nkey; i++) {
-		DDD(n->key[0]);
 		if (!n->isLeaf) { PPP(n->chi[i]); print_tree_core(n->chi[i]); }
 
 		printf("%d", n->key[i]);
-		DDD(n->key[i]);
 		if (i != n->nkey-1 && n->isLeaf) putchar(' ');
 	}
+
 	if (!n->isLeaf) print_tree_core(n->chi[n->nkey]);
 	printf("]");
 }
@@ -263,17 +262,19 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 			node->chi[i] = keydata->chi[i];
 			node->key[i] = keydata->key[i];
 			node->nkey++;
-
-			_node->chi[i] = keydata->chi[i+(N/2)];
-			_node->key[i] = keydata->key[i+(N/2)];
-			_node->nkey++;
 		}
 		node->chi[i] = keydata->chi[i];
-		_node->chi[i] = keydata->chi[i+(N/2)];
+
+		for(i=0; i<(N/2)-1; i++) {
+			_node->chi[i] = keydata->chi[i+(N/2)+1];
+			_node->key[i] = keydata->key[i+(N/2)+1];
+			_node->nkey++;
+		}
+		_node->chi[i] = keydata->chi[i+(N/2)+1];
 
 		PPP(node->chi[0]);  PPP(_node->chi[0]);
 
-		int _key = _node->key[0];
+		int _key = keydata->key[(N/2)];
 		insert_in_parent(node, _key, _node, data);
 	}
 	return node;
@@ -316,15 +317,14 @@ insert(int key, DATA *data)
 		for(int i=0; i<keydata->nkey; i++) printf("%d ", keydata->key[i]);
 		printf("\n");
 
-		splited_leaf->chi[N-1] = leaf->chi[N-1];
-		leaf->chi[N-1] = splited_leaf;
-		for(int i=0; i<leaf->nkey; i++) {
+		for(i=0; i<leaf->nkey; i++) {
 			leaf->key[i] = 0;
 			leaf->chi[i] = NULL;
 		}
+		leaf->chi[i] = NULL;
 		leaf->nkey = 0;
 
-		for(int i=0; i<N/2; i++) {
+		for(i=0; i<N/2; i++) {
 			leaf->chi[i] = keydata->chi[i];
 			leaf->key[i] = keydata->key[i];
 			leaf->nkey++;
@@ -333,6 +333,8 @@ insert(int key, DATA *data)
 			splited_leaf->key[i] = keydata->key[i+(N/2)];
 			splited_leaf->nkey++;
 		}
+		leaf->chi[N-1] = splited_leaf;
+		splited_leaf->chi[N-1] = keydata->chi[N-1];
 
 		int _key;
 		_key = splited_leaf->key[0];
