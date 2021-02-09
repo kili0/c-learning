@@ -237,8 +237,6 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 		}
 		keydata->chi[i] = node->chi[i];
 
-		PPP(keydata->chi[0]);  PPP(keydata->chi[1]);
-
 		keydata = insert_in_temp_internal(keydata, left, key, right);
 
 		PPP(keydata->chi[0]);  PPP(keydata->chi[1]);
@@ -253,8 +251,8 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 		node->chi[node->nkey] = NULL;
 		node->nkey = 0;
 
-		NODE *_node;
-		_node = alloc_parent(node->parent);
+		NODE *splited_node;
+		splited_node = alloc_parent(node->parent);
 
 		PPP(keydata->chi[0]);
 
@@ -266,16 +264,19 @@ insert_in_parent(NODE *left, int key, NODE *right, DATA *data)
 		node->chi[i] = keydata->chi[i];
 
 		for(i=0; i<(N/2)-1; i++) {
-			_node->chi[i] = keydata->chi[i+(N/2)+1];
-			_node->key[i] = keydata->key[i+(N/2)+1];
-			_node->nkey++;
+			splited_node->chi[i] = keydata->chi[i+(N/2)+1];
+			splited_node->key[i] = keydata->key[i+(N/2)+1];
+			splited_node->nkey++;
 		}
-		_node->chi[i] = keydata->chi[i+(N/2)+1];
-
-		PPP(node->chi[0]);  PPP(_node->chi[0]);
+		splited_node->chi[i] = keydata->chi[i+(N/2)+1];
 
 		int _key = keydata->key[(N/2)];
-		insert_in_parent(node, _key, _node, data);
+		insert_in_parent(node, _key, splited_node, data);
+
+		if(right->key[0] == splited_node->key[0]) {
+			left->parent = splited_node;
+			right->parent = splited_node;
+		}
 	}
 	return node;
 }
